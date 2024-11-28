@@ -1,0 +1,88 @@
+services:
+  api: &main_app
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      PRODUCTHUNT_IDEATOR_HOST: 0.0.0.0
+      PRODUCTHUNT_IDEATOR_DB_HOST: producthunt_ideator-db
+      PRODUCTHUNT_IDEATOR_DB_PORT: 5432
+      PRODUCTHUNT_IDEATOR_DB_USER: producthunt_ideator
+      PRODUCTHUNT_IDEATOR_DB_PASS: producthunt_ideator
+      PRODUCTHUNT_IDEATOR_DB_BASE: producthunt_ideator
+      PRODUCTHUNT_IDEATOR_REDIS_HOST: producthunt_ideator-redis
+
+  db:
+    image: postgres:16.3-bullseye
+    hostname: producthunt_ideator-db
+    environment:
+      POSTGRES_PASSWORD: "producthunt_ideator"
+      POSTGRES_USER: "producthunt_ideator"
+      POSTGRES_DB: "producthunt_ideator"
+    volumes:
+      - producthunt_ideator-db-data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: pg_isready -U producthunt_ideator
+      interval: 2s
+      timeout: 3s
+      retries: 40
+
+  migrator:
+    image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
+    restart: "no"
+    command: alembic upgrade head
+    environment:
+      PRODUCTHUNT_IDEATOR_DB_HOST: producthunt_ideator-db
+      PRODUCTHUNT_IDEATOR_DB_PORT: 5432
+      PRODUCTHUNT_IDEATOR_DB_USER: producthunt_ideator
+      PRODUCTHUNT_IDEATOR_DB_PASS: producthunt_ideator
+      PRODUCTHUNT_IDEATOR_DB_BASE: producthunt_ideator
+    depends_on:
+      db:
+        condition: service_healthy
+
+  redis:
+    image: bitnami/redis:6.2.5
+    hostname: "producthunt_ideator-redis"
+    restart: always
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+    healthcheck:
+      test: redis-cli ping
+      interval: 1s
+      timeout: 3s
+      retries: 50
+
+  celery_worker:
+    image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
+    command: celery -A producthunt_ideator.web.application.celery worker --loglevel=info
+    environment:
+      - PRODUCTHUNT_IDEATOR_RELOAD=False
+    depends_on:
+      - db
+      - redis
+
+  flower:
+    image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
+    command: celery -A producthunt_ideator.web.application.celery flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - PRODUCTHUNT_IDEATOR_RELOAD=False
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  producthunt_ideator-db-data:
+    name: producthunt_ideator-db-data

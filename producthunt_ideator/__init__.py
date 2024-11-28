@@ -1,0 +1,1 @@
+"""producthunt_ideator package."""

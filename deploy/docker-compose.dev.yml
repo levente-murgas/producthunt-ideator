@@ -1,0 +1,49 @@
+services:
+  api:
+    ports:
+      # Exposes application port.
+    - "8000:8000"
+    build:
+      context: .
+    volumes:
+      # Adds current directory as volume.
+    - .:/app/src/
+    environment:
+      # Enables autoreload.
+      PRODUCTHUNT_IDEATOR_RELOAD: "True"
+
+  db:
+    ports:
+      # Exposes database port.
+    - "5432:5432"
+
+  redis:
+    ports:
+      # Exposes redis port.
+    - "6379:6379"
+
+  celery_worker:
+    build:
+      context: .
+    command: celery -A producthunt_ideator.services.celery.dependency worker --loglevel=info
+    volumes:
+      - .:/app/src/
+    environment:
+      - PRODUCTHUNT_IDEATOR_RELOAD=True
+    depends_on:
+      - db
+      - redis
+
+  flower:
+    build:
+      context: .
+    command: celery -A producthunt_ideator.services.celery.dependency flower --port=5555
+    ports:
+      - "5555:5555"
+    volumes:
+      - .:/app/src/
+    environment:
+      - PRODUCTHUNT_IDEATOR_RELOAD=True
+    depends_on:
+      - db
+      - redis
