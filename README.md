@@ -1,6 +1,4 @@
-# producthunt_ideator
-
-This project was generated using fastapi_template.
+# Producthunt Ideator
 
 ## Poetry
 

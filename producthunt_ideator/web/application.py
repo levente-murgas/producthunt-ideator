@@ -4,6 +4,7 @@ from celery import Celery
 from fastapi import FastAPI
 from fastapi.responses import UJSONResponse
 
+from producthunt_ideator.log import configure_logging
 from producthunt_ideator.services.celery.dependency import get_celery_app
 from producthunt_ideator.web.lifespan import lifespan_setup
 
@@ -16,6 +17,7 @@ def get_app() -> FastAPI:
 
     :return: application.
     """
+    configure_logging()
     app = FastAPI(
         title="producthunt_ideator",
         version=metadata.version("producthunt_ideator"),
