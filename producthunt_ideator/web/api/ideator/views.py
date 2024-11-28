@@ -2,6 +2,9 @@ import logging
 
 from celery import Celery
 from fastapi import APIRouter, Depends
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
 
 from producthunt_ideator.services.celery.dependency import get_celery_app
 from producthunt_ideator.web.api.ideator import controller
@@ -9,6 +12,7 @@ from producthunt_ideator.web.api.ideator.schema import TaskOut
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+templates = Jinja2Templates(directory="producthunt_ideator/web/templates")
 
 
 @router.post("/")
@@ -33,3 +37,15 @@ async def publish_to_wordpress() -> TaskOut:
     logging.info("Publishing workflow")
     r = controller.publish_to_wordpress.delay()
     return controller._to_task_out(r)
+
+
+@router.get("/generated-content", response_class=HTMLResponse)
+async def get_generated_content() -> HTMLResponse:
+    content = controller.retrieve_generated_content()
+    return HTMLResponse(content=content)
+
+
+@router.get("/render-generated-content")
+async def render_generated_content(request: Request):
+    content = controller.retrieve_generated_content()
+    return templates.TemplateResponse("generated_content.html", {"request": request, "content": content})

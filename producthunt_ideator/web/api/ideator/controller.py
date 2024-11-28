@@ -400,7 +400,7 @@ def run_workflow() -> None:
 
 
 @shared_task
-def publish_to_wordpress() -> None:
+def publish_to_wordpress() -> str:
     today = datetime.now(timezone.utc)
     date_today = today.strftime("%Y-%m-%d")
 
@@ -410,7 +410,7 @@ def publish_to_wordpress() -> None:
             content = file.read()
     except FileNotFoundError:
         logger.error(f"Error: File not found: {file_name}")
-        return
+        return ""
 
     lines = content.splitlines()
     if lines and lines[0].startswith("#"):
@@ -449,6 +449,26 @@ def publish_to_wordpress() -> None:
     else:
         logger.error(f"Failed to publish post: {response.status_code}, {response.text}")
 
+    return content
+
 
 def _to_task_out(r: AsyncResult) -> TaskOut:
     return TaskOut(id=r.task_id, status=r.status)
+
+
+def store_generated_content(content: str) -> None:
+    os.makedirs("data", exist_ok=True)
+    file_name = "data/generated_content.md"
+    with open(file_name, "w", encoding="utf-8") as file:
+        file.write(content)
+
+
+def retrieve_generated_content() -> str:
+    file_name = "data/generated_content.md"
+    try:
+        with open(file_name, "r", encoding="utf-8") as file:
+            content = file.read()
+    except FileNotFoundError:
+        logger.error(f"Error: File not found: {file_name}")
+        return ""
+    return content
