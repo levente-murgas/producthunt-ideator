@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, timedelta, timezone
-from logging import getLogger
 from typing import List, Optional
 
 import instructor
