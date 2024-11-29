@@ -21,16 +21,15 @@ class Analysis(BaseModel):
     def to_markdown(self) -> str:
         proposals = "\n".join([f"- {p.title}: {p.description}" for p in self.proposals])
         return f"""
-        ## Product analysis:\n
+## Product analysis:\n
 
-        ### Strengths:\n
-        {self.strengths}
+### Strengths:\n
+{self.strengths}
 
-        ### Weaknesses:\n
-        {self.weaknesses}
+### Weaknesses:\n
+{self.weaknesses}
 
-        ### Proposals\n
-        {proposals}
-        """.format(
+### Proposals\n
+{proposals}""".format(
             proposals=proposals,
         )

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from logging import getLogger
 from typing import List, Optional
 
+import instructor
 import markdown
 import requests
 from asgiref.sync import async_to_sync
@@ -19,13 +20,13 @@ from llama_index.core.workflow import (
     Workflow,
     step,
 )
-from llama_index.llms.azure_openai import AzureOpenAI
+from llama_index.llms.azure_openai import AzureOpenAI as LlamaAzureOpenAI
+from loguru import logger
+from openai import AsyncAzureOpenAI
 from trafilatura import extract, fetch_url
 
 from producthunt_ideator.settings import settings
 from producthunt_ideator.web.api.ideator.schema import Analysis, TaskOut
-
-logger = getLogger(__name__)
 
 
 class Product:
@@ -89,7 +90,7 @@ class Product:
         document = extract(downloaded)
         return document if document else ""
 
-    async def generate_description(self, llm: AzureOpenAI) -> None:
+    async def generate_description(self, llm: LlamaAzureOpenAI) -> None:
         """Asynchronously generates a concise and insightful description of a product using Azure OpenAI.
 
         This method extracts the landing page text and uses it along with the product's name, tagline,
@@ -193,12 +194,20 @@ class FinalResultEvent(Event):
 
 
 class IdeatorWorkflow(Workflow):
-    llm = AzureOpenAI(
+    llm = LlamaAzureOpenAI(
         model=settings.gpt_model,
         deployment_name=settings.gpt_model,
         api_key=settings.openai_api_key,
         azure_endpoint=settings.azure_openai_endpoint,
         api_version="2024-08-01-preview",
+    )
+    client = instructor.from_openai(
+        AsyncAzureOpenAI(
+            azure_deployment=settings.gpt_model,
+            api_key=settings.openai_api_key,
+            azure_endpoint=settings.azure_openai_endpoint,
+            api_version="2024-08-01-preview",
+        ),
     )
 
     def __init__(
@@ -207,7 +216,7 @@ class IdeatorWorkflow(Workflow):
         verbose: bool = False,
         num_concurrent_runs: Optional[int] = None,
     ) -> None:
-        super().__init__(timeout, verbose)
+        super().__init__(timeout, verbose, num_concurrent_runs=num_concurrent_runs)
         self.token = self._get_producthunt_token()
 
     def _get_producthunt_token(self) -> str:
@@ -358,10 +367,21 @@ class IdeatorWorkflow(Workflow):
         user_msg = ChatMessage(content=user_content, role=MessageRole.USER)
         chat_template = ChatPromptTemplate(message_templates=[system_msg, user_msg])
         messages = chat_template.format_messages()
-        sllm = self.llm.as_structured_llm(output_cls=Analysis)
-        response = await sllm.achat(messages)
+
+        if settings.instructor:
+            dict_messages = [message.dict() for message in messages]
+            proposal = await self.client.chat.completions.create(
+                model=settings.gpt_model,
+                response_model=Analysis,
+                messages=dict_messages,  # type: ignore
+            )  # type: ignore
+        else:
+            sllm = self.llm.as_structured_llm(output_cls=Analysis)
+            response = await sllm.achat(messages)
+            proposal = response.raw
+
         ctx.send_event(
-            FinalResultEvent(product=product, proposal=response.raw),
+            FinalResultEvent(product=product, proposal=proposal),
         )
 
     @step
@@ -382,6 +402,7 @@ def generate_markdown(events: List[FinalResultEvent]):
     for event in events:
         markdown_content += event.product.to_markdown()
         markdown_content += event.proposal.to_markdown()
+        markdown_content += "---\n\n"
 
     os.makedirs("data", exist_ok=True)
 
@@ -448,6 +469,9 @@ def publish_to_wordpress() -> None:
         logger.info("Post published successfully.")
     else:
         logger.error(f"Failed to publish post: {response.status_code}, {response.text}")
+        # saving response to a file for debugging
+        with open(f"data/error_{slug}.json", "w", encoding="utf-8") as file:
+            file.write(response.text)
 
 
 def _to_task_out(r: AsyncResult) -> TaskOut:

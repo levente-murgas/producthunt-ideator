@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     workers_count: int = 1
     # Enable uvicorn reloading
     reload: bool = False
+    # Whether to use instructor package for structured outputs
+    instructor: bool = True
 
     # Current environment
     environment: str = "dev"
