@@ -27,9 +27,6 @@ jobs:
         with:
           compose-file: ./docker-compose-prod.yml
 
-      - name: Wait for services to be up
-        run: sleep 30
-
       - name: Call endpoint
         run: |
           curl -X POST "http://localhost:8000/api/run_workflow"
