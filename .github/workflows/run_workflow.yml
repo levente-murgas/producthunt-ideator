@@ -13,6 +13,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: "check is PRODUCTHUNT_IDEATOR_GPT_MODEL exists"
+        env: 
+            PRODUCTHUNT_IDEATOR_GPT_MODEL: ${{ secrets.PRODUCTHUNT_IDEATOR_GPT_MODEL }}
+        if: ${{ env.PRODUCTHUNT_IDEATOR_GPT_MODEL == '' }}
+        run: 'echo "the secret \"PRODUCTHUNT_IDEATOR_GPT_MODEL\" has not been made; echo please go to \"settings \> secrets \> actions\" to create it"'
+
       - name: Build containers
         env:
           PRODUCTHUNT_IDEATOR_GPT_MODEL: ${{ secrets.PRODUCTHUNT_IDEATOR_GPT_MODEL }}

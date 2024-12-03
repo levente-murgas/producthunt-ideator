@@ -1,6 +1,15 @@
 services:
   api: &main_app
     build:
+      secrets:
+        - GPT_MODEL
+        - OPENAI_API_KEY
+        - AZURE_OPENAI_ENDPOINT
+        - PRODUCTHUNT_CLIENT_ID
+        - PRODUCTHUNT_CLIENT_SECRET
+        - WORDPRESS_URL
+        - WORDPRESS_USER
+        - WORDPRESS_PASSWORD
       context: .
       dockerfile: ./Dockerfile
     image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
@@ -46,6 +55,16 @@ services:
 
   migrator:
     image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
+    build:
+      secrets:
+        - GPT_MODEL
+        - OPENAI_API_KEY
+        - AZURE_OPENAI_ENDPOINT
+        - PRODUCTHUNT_CLIENT_ID
+        - PRODUCTHUNT_CLIENT_SECRET
+        - WORDPRESS_URL
+        - WORDPRESS_USER
+        - WORDPRESS_PASSWORD
     restart: "no"
     command: alembic upgrade head
     environment:
@@ -81,6 +100,16 @@ services:
 
   celery_worker:
     image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
+    build:
+      secrets:
+        - GPT_MODEL
+        - OPENAI_API_KEY
+        - AZURE_OPENAI_ENDPOINT
+        - PRODUCTHUNT_CLIENT_ID
+        - PRODUCTHUNT_CLIENT_SECRET
+        - WORDPRESS_URL
+        - WORDPRESS_USER
+        - WORDPRESS_PASSWORD
     command: celery -A producthunt_ideator.web.application.celery worker --loglevel=info
     environment:
       - PRODUCTHUNT_IDEATOR_RELOAD=False
@@ -99,6 +128,16 @@ services:
 
   flower:
     image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
+    build:
+      secrets:
+        - GPT_MODEL
+        - OPENAI_API_KEY
+        - AZURE_OPENAI_ENDPOINT
+        - PRODUCTHUNT_CLIENT_ID
+        - PRODUCTHUNT_CLIENT_SECRET
+        - WORDPRESS_URL
+        - WORDPRESS_USER
+        - WORDPRESS_PASSWORD
     command: celery -A producthunt_ideator.web.application.celery flower --port=5555
     ports:
       - "5555:5555"
