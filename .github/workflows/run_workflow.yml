@@ -15,8 +15,7 @@ jobs:
         ports:
           - 6379:6379
       api:
-        build:
-          context: .
+        image: api_image_name
         ports:
           - 8000:8000
         env:
@@ -31,8 +30,7 @@ jobs:
           PRODUCTHUNT_IDEATOR_WORDPRESS_USER: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_USER }}
           PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD }}
       celery_worker:
-        build:
-          context: .
+        image: celery_worker_image_name
         command: celery -A producthunt_ideator.services.celery.dependency worker --loglevel=info
         env:
           PRODUCTHUNT_IDEATOR_REDIS_HOST: redis
@@ -52,6 +50,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Build API Docker image
+        run: docker build -t api_image_name .
+
+      - name: Build Celery Worker Docker image
+        run: docker build -t celery_worker_image_name .
 
       - name: Wait for services to be up
         run: sleep 30
