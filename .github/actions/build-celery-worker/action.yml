@@ -1,0 +1,8 @@
+
+name: 'Build Celery Worker Docker Image'
+description: 'Build the Docker image for the Celery Worker service'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - celery_worker_image_name
