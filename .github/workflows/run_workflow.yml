@@ -23,8 +23,9 @@ jobs:
           PRODUCTHUNT_IDEATOR_WORDPRESS_URL: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_URL }}
           PRODUCTHUNT_IDEATOR_WORDPRESS_USER: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_USER }}
           PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD }}
-        uses: |
-          ./.github/actions/build-docker
+        uses: hoverkraft-tech/compose-action@v2.0.2
+        with:
+          compose-file: ./docker-compose-prod.yml
 
       - name: Wait for services to be up
         run: sleep 30
