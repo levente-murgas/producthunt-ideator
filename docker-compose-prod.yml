@@ -1,10 +1,5 @@
-x-common-variables: &common-variables
-  env_file:
-    - .env
-
 services:
   api: &main_app
-    <<: *common-variables
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -41,7 +36,6 @@ services:
       retries: 40
 
   migrator:
-    <<: *common-variables
     image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
     restart: "no"
     command: alembic upgrade head
@@ -68,7 +62,6 @@ services:
       retries: 50
 
   celery_worker:
-    <<: *common-variables
     image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
     command: celery -A producthunt_ideator.web.application.celery worker --loglevel=info
     environment:
@@ -78,7 +71,6 @@ services:
       - redis
 
   flower:
-    <<: *common-variables
     image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
     command: celery -A producthunt_ideator.web.application.celery flower --port=5555
     ports:
