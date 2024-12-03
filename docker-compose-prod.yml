@@ -1,5 +1,18 @@
+x-common-variables: &common-variables
+  secrets:
+    - PRODUCTHUNT_IDEATOR_GPT_MODEL
+    - PRODUCTHUNT_IDEATOR_OPENAI_API_KEY
+    - PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT
+    - PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID
+    - PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET
+    - PRODUCTHUNT_IDEATOR_WORDPRESS_URL
+    - PRODUCTHUNT_IDEATOR_WORDPRESS_USER
+    - PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD
+
+
 services:
   api: &main_app
+    <<: *common-variables
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -36,6 +49,7 @@ services:
       retries: 40
 
   migrator:
+    <<: *common-variables
     image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
     restart: "no"
     command: alembic upgrade head
@@ -62,6 +76,7 @@ services:
       retries: 50
 
   celery_worker:
+    <<: *common-variables
     image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
     command: celery -A producthunt_ideator.web.application.celery worker --loglevel=info
     environment:
@@ -71,6 +86,7 @@ services:
       - redis
 
   flower:
+    <<: *common-variables
     image: producthunt_ideator:${PRODUCTHUNT_IDEATOR_VERSION:-latest}
     command: celery -A producthunt_ideator.web.application.celery flower --port=5555
     ports:
@@ -80,6 +96,24 @@ services:
     depends_on:
       - db
       - redis
+
+secrets:
+  PRODUCTHUNT_IDEATOR_GPT_MODEL:
+    environment: "PRODUCTHUNT_IDEATOR_GPT_MODEL"
+  PRODUCTHUNT_IDEATOR_OPENAI_API_KEY:
+    environment: "PRODUCTHUNT_IDEATOR_OPENAI_API_KEY"
+  PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT:
+    environment: "PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT"
+  PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID:
+    environment: "PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID"
+  PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET:
+    environment: "PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET"
+  PRODUCTHUNT_IDEATOR_WORDPRESS_URL:
+    environment: "PRODUCTHUNT_IDEATOR_WORDPRESS_URL"
+  PRODUCTHUNT_IDEATOR_WORDPRESS_USER: 
+    environment: "PRODUCTHUNT_IDEATOR_WORDPRESS_USER"
+  PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD: 
+    environment: "PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD"
 
 volumes:
   producthunt_ideator-db-data:
