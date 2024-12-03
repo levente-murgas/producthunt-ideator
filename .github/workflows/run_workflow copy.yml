@@ -1,0 +1,53 @@
+name: Run Workflow and Push Changes
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PRODUCTHUNT_IDEATOR_REDIS_HOST: redis
+  PRODUCTHUNT_IDEATOR_RELOAD: "False"
+  PRODUCTHUNT_IDEATOR_GPT_MODEL: ${{ secrets.PRODUCTHUNT_IDEATOR_GPT_MODEL }}
+  PRODUCTHUNT_IDEATOR_OPENAI_API_KEY: ${{ secrets.PRODUCTHUNT_IDEATOR_OPENAI_API_KEY }}
+  PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT: ${{ secrets.PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT }}
+  PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID: ${{ secrets.PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID }}
+  PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET: ${{ secrets.PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET }}
+  PRODUCTHUNT_IDEATOR_WORDPRESS_URL: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_URL }}
+  PRODUCTHUNT_IDEATOR_WORDPRESS_USER: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_USER }}
+  PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD }}
+
+
+jobs:
+  run-workflow:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Build containers
+        run: docker-compose up --build
+
+      - name: Wait for services to be up
+        run: sleep 30
+
+      - name: Call endpoint
+        run: |
+          curl -X POST "http://localhost:8000/api/run_workflow"
+
+      - name: Wait for workflow to complete
+        run: sleep 60
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git commit -m "Add new data file"
+          git push --force https://${{ secrets.PAT }}@github.com/${{ github.repository_owner }}/producthunt-daily-hot.git HEAD:main

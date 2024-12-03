@@ -397,7 +397,7 @@ def generate_markdown(events: List[FinalResultEvent]):
     today = datetime.now(timezone.utc)
     date_today = today.strftime("%Y-%m-%d")
 
-    markdown_content = f"# ProductHunt Top 30 | {date_today}\n\n"
+    markdown_content = f"# ProductHunt Top {settings.post_limit} | {date_today}\n\n"
     for event in events:
         markdown_content += event.product.to_markdown()
         markdown_content += event.proposal.to_markdown()

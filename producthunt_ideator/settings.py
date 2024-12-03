@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     # Current environment
     environment: str = "dev"
 
-    post_limit: int = 2
+    post_limit: int = 3
 
     log_level: LogLevel = LogLevel.INFO
     # Variables for the database
