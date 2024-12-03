@@ -1,8 +1,0 @@
-
-name: 'Build API Docker Image'
-description: 'Build the Docker image for the API service'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args:
-    - api_image_name

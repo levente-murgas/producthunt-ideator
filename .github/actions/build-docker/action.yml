@@ -1,0 +1,6 @@
+name: 'Build Docker Images'
+runs:
+  using: "composite"
+  steps:
+    - run: docker compose -f docker-compose-prod.yml up
+      shell: bash
