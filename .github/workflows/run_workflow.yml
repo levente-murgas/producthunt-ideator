@@ -19,6 +19,9 @@ jobs:
             PRODUCTHUNT_IDEATOR_GPT_MODEL: ${{ secrets.PRODUCTHUNT_IDEATOR_GPT_MODEL }}
         if: ${{ env.PRODUCTHUNT_IDEATOR_GPT_MODEL == '' }}
         run: 'echo "the secret \"PRODUCTHUNT_IDEATOR_GPT_MODEL\" has not been made; echo please go to \"settings \> secrets \> actions\" to create it"'
+      - name: "else"
+        env: 
+              PRODUCTHUNT_IDEATOR_GPT_MODEL: ${{ secrets.PRODUCTHUNT_IDEATOR_GPT_MODEL }}
         if: ${{ ! env.PRODUCTHUNT_IDEATOR_GPT_MODEL == '' }}
         run: 'echo "the secret is available for the workflow to use"'
 
