@@ -26,9 +26,9 @@ jobs:
         run: 'echo "the secret is available for the workflow to use"'
 
       - name: Install Docker using Docker's official script
-          run: |
-            curl -fsSL https://get.docker.com -o get-docker.sh
-            sudo sh get-docker.sh
+        run: |
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sudo sh get-docker.sh
         continue-on-error: false
       - name: Install Docker Compose
         run: |
