@@ -5,16 +5,16 @@ from fastapi import APIRouter, Depends
 
 from producthunt_ideator.services.celery.dependency import get_celery_app
 from producthunt_ideator.web.api.ideator import controller
-from producthunt_ideator.web.api.ideator.schema import TaskOut
+from producthunt_ideator.web.api.ideator.schema import TaskOut, RunWorkflowIn
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.post("/")
-async def run_workflow() -> TaskOut:
+async def run_workflow(body: RunWorkflowIn) -> TaskOut:
     logging.info("Running workflow")
-    r = controller.run_workflow.delay()
+    r = controller.run_workflow.delay(body.date)
     return controller._to_task_out(r)
 
 

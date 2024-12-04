@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel, Field
@@ -6,6 +7,14 @@ from pydantic import BaseModel, Field
 class TaskOut(BaseModel):
     id: str
     status: str
+
+
+class RunWorkflowIn(BaseModel):
+    # date should be in the format of "YYYY-MM-DD"
+    date: str = Field(
+        description="Date of the workflow, format: YYYY-MM-DD",
+        default=datetime.today().strftime("%Y-%m-%d"),
+    )
 
 
 class Proposal(BaseModel):

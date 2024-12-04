@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import List, Optional
 
 import instructor
@@ -245,8 +245,7 @@ class IdeatorWorkflow(Workflow):
         ctx: Context,
         ev: StartEvent,
     ) -> ProductEvent:  # type: ignore
-        yesterday = datetime.now(timezone.utc) - timedelta(days=1)
-        date_str = yesterday.strftime("%Y-%m-%d")
+        date_str = ev.date
         url = "https://api.producthunt.com/v2/api/graphql"
         headers = {"Authorization": f"Bearer {self.token}"}
 
@@ -393,11 +392,8 @@ class IdeatorWorkflow(Workflow):
         return StopEvent(result=result)
 
 
-def generate_markdown(events: List[FinalResultEvent]):
-    today = datetime.now(timezone.utc)
-    date_today = today.strftime("%Y-%m-%d")
-
-    markdown_content = f"# ProductHunt Top {settings.post_limit} | {date_today}\n\n"
+def generate_markdown(events: List[FinalResultEvent], date: str) -> None:
+    markdown_content = f"# ProductHunt Top {settings.post_limit} | {date}\n\n"
     for event in events:
         markdown_content += event.product.to_markdown()
         markdown_content += event.proposal.to_markdown()
@@ -405,7 +401,7 @@ def generate_markdown(events: List[FinalResultEvent]):
 
     os.makedirs("data", exist_ok=True)
 
-    file_name = f"data/producthunt-daily-{date_today}.md"
+    file_name = f"data/producthunt-daily-{date}.md"
 
     with open(file_name, "w", encoding="utf-8") as file:
         file.write(markdown_content)
@@ -413,10 +409,10 @@ def generate_markdown(events: List[FinalResultEvent]):
 
 
 @shared_task
-def run_workflow() -> None:
+def run_workflow(date: str) -> None:
     w = IdeatorWorkflow(timeout=None, verbose=False)
-    events = async_to_sync(w.run)()
-    generate_markdown(events)
+    events = async_to_sync(w.run)(date=date)
+    generate_markdown(events, date)
 
 
 @shared_task
