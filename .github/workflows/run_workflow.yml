@@ -30,7 +30,9 @@ jobs:
           PRODUCTHUNT_IDEATOR_WORDPRESS_URL: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_URL }}
           PRODUCTHUNT_IDEATOR_WORDPRESS_USER: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_USER }}
           PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD }}
+        uses: hoverkraft-tech/compose-action@v2.0.2
         with:
+          compose-file: ./docker-compose-prod.yml
           PRODUCTHUNT_IDEATOR_GPT_MODEL: ${{ secrets.PRODUCTHUNT_IDEATOR_GPT_MODEL }}
           PRODUCTHUNT_IDEATOR_OPENAI_API_KEY: ${{ secrets.PRODUCTHUNT_IDEATOR_OPENAI_API_KEY }}
           PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT: ${{ secrets.PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT }}
@@ -39,9 +41,6 @@ jobs:
           PRODUCTHUNT_IDEATOR_WORDPRESS_URL: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_URL }}
           PRODUCTHUNT_IDEATOR_WORDPRESS_USER: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_USER }}
           PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD }}
-        uses: hoverkraft-tech/compose-action@v2.0.2
-        with:
-          compose-file: ./docker-compose-prod.yml
 
 
 
