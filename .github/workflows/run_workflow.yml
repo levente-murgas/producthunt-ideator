@@ -25,29 +25,40 @@ jobs:
         if: ${{ ! env.PRODUCTHUNT_IDEATOR_GPT_MODEL == '' }}
         run: 'echo "the secret is available for the workflow to use"'
 
-      - name: Build containers
-        env:
-          PRODUCTHUNT_IDEATOR_GPT_MODEL: ${{ secrets.PRODUCTHUNT_IDEATOR_GPT_MODEL }}
-          PRODUCTHUNT_IDEATOR_OPENAI_API_KEY: ${{ secrets.PRODUCTHUNT_IDEATOR_OPENAI_API_KEY }}
-          PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT: ${{ secrets.PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT }}
-          PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID: ${{ secrets.PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID }}
-          PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET: ${{ secrets.PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET }}
-          PRODUCTHUNT_IDEATOR_WORDPRESS_URL: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_URL }}
-          PRODUCTHUNT_IDEATOR_WORDPRESS_USER: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_USER }}
-          PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD }}
-        uses: hoverkraft-tech/compose-action@v2.0.2
-        with:
-          compose-file: ./docker-compose-prod.yml
-          PRODUCTHUNT_IDEATOR_GPT_MODEL: ${{ secrets.PRODUCTHUNT_IDEATOR_GPT_MODEL }}
-          PRODUCTHUNT_IDEATOR_OPENAI_API_KEY: ${{ secrets.PRODUCTHUNT_IDEATOR_OPENAI_API_KEY }}
-          PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT: ${{ secrets.PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT }}
-          PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID: ${{ secrets.PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID }}
-          PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET: ${{ secrets.PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET }}
-          PRODUCTHUNT_IDEATOR_WORDPRESS_URL: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_URL }}
-          PRODUCTHUNT_IDEATOR_WORDPRESS_USER: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_USER }}
-          PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD }}
+      - name: Install Docker using Docker's official script
+          run: |
+            curl -fsSL https://get.docker.com -o get-docker.sh
+            sudo sh get-docker.sh
+        continue-on-error: false
+      - name: Install Docker Compose
+        run: |
+            sudo curl -L "https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            docker-compose --version
+        continue-on-error: false
 
-
+      - name: Start application-specific services using Docker Compose
+          run: docker-compose -f docker-compose-prod.yml up -d --build
+          continue-on-error: false
+          env:
+            PRODUCTHUNT_IDEATOR_GPT_MODEL: ${{ secrets.PRODUCTHUNT_IDEATOR_GPT_MODEL }}
+            PRODUCTHUNT_IDEATOR_OPENAI_API_KEY: ${{ secrets.PRODUCTHUNT_IDEATOR_OPENAI_API_KEY }}
+            PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT: ${{ secrets.PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT }}
+            PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID: ${{ secrets.PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID }}
+            PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET: ${{ secrets.PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET }}
+            PRODUCTHUNT_IDEATOR_WORDPRESS_URL: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_URL }}
+            PRODUCTHUNT_IDEATOR_WORDPRESS_USER: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_USER }}
+            PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD }}
+          with:
+            compose-file: ./docker-compose-prod.yml
+            PRODUCTHUNT_IDEATOR_GPT_MODEL: ${{ secrets.PRODUCTHUNT_IDEATOR_GPT_MODEL }}
+            PRODUCTHUNT_IDEATOR_OPENAI_API_KEY: ${{ secrets.PRODUCTHUNT_IDEATOR_OPENAI_API_KEY }}
+            PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT: ${{ secrets.PRODUCTHUNT_IDEATOR_AZURE_OPENAI_ENDPOINT }}
+            PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID: ${{ secrets.PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_ID }}
+            PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET: ${{ secrets.PRODUCTHUNT_IDEATOR_PRODUCTHUNT_CLIENT_SECRET }}
+            PRODUCTHUNT_IDEATOR_WORDPRESS_URL: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_URL }}
+            PRODUCTHUNT_IDEATOR_WORDPRESS_USER: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_USER }}
+            PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD: ${{ secrets.PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD }}
 
       - name: Call endpoint
         run: |
