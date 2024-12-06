@@ -24,6 +24,11 @@ services:
       - PRODUCTHUNT_IDEATOR_WORDPRESS_URL=${PRODUCTHUNT_IDEATOR_WORDPRESS_URL}
       - PRODUCTHUNT_IDEATOR_WORDPRESS_USER=${PRODUCTHUNT_IDEATOR_WORDPRESS_USER}
       - PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD=${PRODUCTHUNT_IDEATOR_WORDPRESS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
   db:
     image: postgres:16.3-bullseye
     hostname: producthunt_ideator-db
