@@ -2,6 +2,7 @@
 
 The Producthunt Ideator project was a roadmap project for me to explore how I can integrate FastAPI, Celery, and LlamaIndex Workflows. The main feature of this project is the Ideator API, which facilitates the analysis and reimagination of products from Product Hunt. The API fetches product data, processes it to generate descriptions using Azure OpenAI, and proposes innovative B2B applications. The project leverages Celery for task management and asynchronous processing, ensuring efficient and scalable operations.
 
+
 ## Poetry
 
 This project uses poetry. It's a modern dependency management
